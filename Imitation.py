@@ -22,7 +22,7 @@ class Seed:
     @pram 1:mutation rate , 2:probabilty of adding new 1d genes ,3:scale factoer
     @return a new mutation version of seed object
     """
-    def mutate(self,rate=0.01,add_chance=0.3,scale=0.3):
+    def mutate(self,rate=0.01,add_chance=0.1,scale=0.1):
 
         chrom = np.copy(self.chrom)
         genes, feat = self.chrom.shape
@@ -63,13 +63,26 @@ class Seed:
         
         copyme = np.copy(self.chrom)
         other_copy = np.copy(other.chrom)
+        res = []
         if copyme.shape == other_copy.shape:
             #we take the the color from copyme
             #and we take the postion x,y from other copy
             #print('in if')
-            off_one = copyme[:,:5]
-            off_tow = other_copy[:,-2:]
+            for i in range(copyme.shape[1]):
+                if random() > 0.6:
+                    s = copyme[:,i]
+                else:
+                    s = other_copy[:,i]
+                res.append(s)
+                #print(res)
+                #input()
+
+            res = np.column_stack(res)
+            """
+            off_one = copyme[:,:s]
+            off_tow = other_copy[:,s:]
             res = np.append(off_one,off_tow, axis=1)
+            """
         else:
             # we add part from copyme and part from other_copy
             #print('in else')
@@ -93,6 +106,11 @@ class Seed:
                     p1 = other_copy[:far,:]
                     p2 = copyme[far:,:]
 
+                #res = np.append(p1,p2, axis=0)
+                #print('before the the gene swap')
+                #print(res)
+                #return self.crossover(Seed(res))
+
             # other_copy is greater
             else:
                 if far > r1:
@@ -103,8 +121,15 @@ class Seed:
                     p1 = copyme[:far,:]
                     p2 = other_copy[far:,:]
 
+                #res = np.append(p1,p2, axis=0)
+                #print('before the the gene swap')
+                #print(res)
+                #return other.crossover(Seed(res))
+
             res = np.append(p1,p2, axis=0)
 
+        #print('the final result')
+        #print(res)
         return Seed(res)
         
 
@@ -253,7 +278,6 @@ class Population:
         #print(self.__str__(True))
         #print(self.w)
         #input()
-        
         if abs(self.best_one.fitness - new_pop[-1].fitness) <= 0.0001:
             mutation_rate += abs(normal()* scale)
             scale = scale / mutation_rate 
@@ -299,7 +323,7 @@ the test are done in Performance.py file
 def ev_with_p(p,pop_size,Gen,rate=0.01):
     p.init(pop_size)
     re = []
-    for i in range(Gen-1):
+    for i in range(Gen):
         p.produse(mutation_rate = rate)
         re.append(p.best_one)
         p.window.blit(p.best_one.pic_ref ,(0,0))
@@ -307,17 +331,34 @@ def ev_with_p(p,pop_size,Gen,rate=0.01):
 
         print(p.__str__(True))
     return re
- 
+# New
+"""
+def ev_with_p(p, pop_size, Gen, file_name_sample, start, rate=0.01):
+    p.init(pop_size)
+    re = []
+    for i in range(Gen-1):
+        p.produse(mutation_rate = rate)
+        pas = time.time() - start
+        re.append(p.best_one)
+        p.window.blit(p.best_one.pic_ref ,(0,0))
+        pygame.display.update()
+        pygame.image.save(p.best_one.pic_ref, f'{file_name_sample}/Genration:{i+1} \
+                _Time:{pas/60}_{p.best_one.fitness}.jpeg')
+
+        print(p.__str__(True))
+    return re
+"""
 # crossover Tests
 """
 nrg = np.random.default_rng()
 chrom = nrg.random((2,6))
 
-p = Population('g.webp')
+p = Population('./Images/Mona_Lisa.jpg')
 s = Seed(chrom)
-o = Seed(nrg.random((6,6)))
+o = Seed(nrg.random((2,6)))
 re = s.crossover(o)
 
+print('_________________________________')
 print(s.chrom)
 print('_________________________________')
 print(o.chrom)
